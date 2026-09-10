@@ -1,6 +1,12 @@
-def main():
-    print("Agentic Code Review Platform")
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="Agentic Code Review Platform",
+    description="AI-powered code review platform for GitHub Pull Requests.",
+    version="0.1.0",
+)
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
