@@ -37,3 +37,24 @@ class GitHubClient:
         response.raise_for_status()
 
         return response.json()
+
+    async def get_pull_request_files(
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+    ) -> list[dict]:
+        url = (
+            f"{self.base_url}/repos/"
+            f"{owner}/{repo}/pulls/{pull_number}/files"
+        )
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                url,
+                headers=self.headers,
+            )
+
+        response.raise_for_status()
+
+        return response.json()
