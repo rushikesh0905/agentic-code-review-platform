@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     app_name: str = "Agentic Code Review Platform"
     app_version: str = "0.1.0"
 
+    github_token: str | None = None
+    github_webhook_secret: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

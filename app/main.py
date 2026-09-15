@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 
+from app.api.github import router as github_router
 from app.api.routes import router
-from app.config import settings
 
 app = FastAPI(
-    title=settings.app_name,
+    title="Agentic Code Review Platform",
     description="AI-powered code review platform for GitHub Pull Requests.",
-    version=settings.app_version,
+    version="0.1.0",
 )
 
 app.include_router(router)
+app.include_router(github_router)
