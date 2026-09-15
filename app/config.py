@@ -7,6 +7,7 @@ class Settings(BaseSettings):
 
     github_token: str | None = None
     github_webhook_secret: str | None = None
+    github_api_url: str = "https://api.github.com"
 
     model_config = SettingsConfigDict(
         env_file=".env",
