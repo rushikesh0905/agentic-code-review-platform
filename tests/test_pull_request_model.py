@@ -26,3 +26,27 @@ def test_pull_request_model():
     assert pr.title == "Add authentication"
     assert pr.files[0].path == "app/auth.py"
     assert pr.files[0].additions == 10
+
+
+def test_pull_request_file_parses_patch():
+    file = PullRequestFile(
+        path="app/auth.py",
+        status="modified",
+        additions=2,
+        deletions=1,
+        changes=3,
+        patch="""@@ -10,3 +10,4 @@
+ def login():
+-    password = "1234"
++    password = get_password()
++    validate_password(password)
+""",
+    )
+
+    diff = file.parsed_diff()
+
+    assert len(diff) == 1
+    assert diff[0]["old_start"] == 10
+    assert diff[0]["new_start"] == 10
+    assert diff[0]["changes"][1]["type"] == "removed"
+    assert diff[0]["changes"][2]["type"] == "added"
