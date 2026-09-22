@@ -4,8 +4,9 @@ from app.config import settings
 
 
 class GitHubClient:
-    def __init__(self):
+    def __init__(self, transport: httpx.AsyncBaseTransport | None = None):
         self.base_url = settings.github_api_url
+        self.transport = transport
 
         self.headers = {
             "Accept": "application/vnd.github+json",
@@ -28,7 +29,7 @@ class GitHubClient:
             f"{owner}/{repo}/pulls/{pull_number}"
         )
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(transport=self.transport) as client:
             response = await client.get(
                 url,
                 headers=self.headers,
@@ -49,12 +50,20 @@ class GitHubClient:
             f"{owner}/{repo}/pulls/{pull_number}/files"
         )
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                url,
-                headers=self.headers,
-            )
+        files = []
+        page = 1
 
-        response.raise_for_status()
+        async with httpx.AsyncClient(transport=self.transport) as client:
+            while True:
+                response = await client.get(
+                    url,
+                    headers=self.headers,
+                    params={"page": page, "per_page": 100},
+                )
+                response.raise_for_status()
+                files.extend(response.json())
 
-        return response.json()
+                if "next" not in response.links:
+                    return files
+
+                page += 1
