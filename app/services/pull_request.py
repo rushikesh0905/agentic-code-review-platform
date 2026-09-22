@@ -32,6 +32,7 @@ class PullRequestService:
             author=pull_request["user"]["login"],
             base_branch=pull_request["base"]["ref"],
             head_branch=pull_request["head"]["ref"],
+            head_sha=pull_request["head"].get("sha"),
             files=[
                 PullRequestFile(
                     path=file["filename"],

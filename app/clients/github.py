@@ -67,3 +67,32 @@ class GitHubClient:
                     return files
 
                 page += 1
+
+    async def create_pull_request_review(
+        self,
+        owner: str,
+        repo: str,
+        pull_number: int,
+        commit_id: str,
+        body: str,
+        comments: list[dict],
+    ) -> dict:
+        url = (
+            f"{self.base_url}/repos/"
+            f"{owner}/{repo}/pulls/{pull_number}/reviews"
+        )
+
+        async with httpx.AsyncClient(transport=self.transport) as client:
+            response = await client.post(
+                url,
+                headers=self.headers,
+                json={
+                    "commit_id": commit_id,
+                    "body": body,
+                    "event": "COMMENT",
+                    "comments": comments,
+                },
+            )
+
+        response.raise_for_status()
+        return response.json()

@@ -1,14 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from app.dependencies.common import get_app_name
 from app.dependencies.common import (
     get_pull_request_service,
+    get_review_publisher,
     get_review_orchestrator,
 )
 from app.services.orchestrator import ReviewOrchestrator
 from app.services.pull_request import PullRequestService
+from app.services.publisher import ReviewPublisher
 
 router = APIRouter()
+
+
+class ReviewRequest(BaseModel):
+    publish: bool = False
+    dry_run: bool = True
 
 
 @router.get("/health")
@@ -31,6 +39,8 @@ async def review_pull_request(
     pull_number: int,
     pull_request_service: PullRequestService = Depends(get_pull_request_service),
     orchestrator: ReviewOrchestrator = Depends(get_review_orchestrator),
+    publisher: ReviewPublisher = Depends(get_review_publisher),
+    request: ReviewRequest | None = None,
 ):
     try:
         pull_request = await pull_request_service.get_review_input(
@@ -38,7 +48,18 @@ async def review_pull_request(
             repo,
             pull_number,
         )
-        return orchestrator.review(pull_request)
+        report = orchestrator.review(pull_request)
+        if request and request.publish:
+            publication = await publisher.publish(
+                owner,
+                repo,
+                pull_number,
+                pull_request,
+                report,
+                dry_run=request.dry_run,
+            )
+            return {**report.model_dump(mode="json"), "publication": publication}
+        return report
     except Exception as error:
         raise HTTPException(
             status_code=502,

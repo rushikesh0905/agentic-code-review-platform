@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.parsers.diff import parse_patch
 
@@ -28,5 +28,6 @@ class PullRequest(BaseModel):
 
     base_branch: str
     head_branch: str
+    head_sha: str | None = None
 
-    files: list[PullRequestFile] = []
+    files: list[PullRequestFile] = Field(default_factory=list)
